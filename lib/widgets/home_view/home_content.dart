@@ -8,7 +8,7 @@ class HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenTypeLayout(
       desktop: HomeContentDesktop(),
-      mobile: HomeContentMobile(),
+      // mobile: HomeContentMobile(),
     );
   }
 }

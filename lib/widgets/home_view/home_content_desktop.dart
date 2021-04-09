@@ -10,7 +10,6 @@ import 'dart:convert' as convert;
 import 'package:uuid/uuid.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase/firebase.dart' as fb;
 
 class HomeContentDesktop extends StatefulWidget {
   @override
@@ -18,42 +17,40 @@ class HomeContentDesktop extends StatefulWidget {
 }
 
 class _HomeContentDesktopState extends State<HomeContentDesktop> {
-  //to store the current value of summary
   Summary _currentSummary;
-  // final Future<FirebaseApp> _initialization = await Firebase.initializeApp();
+  String _error = null;
+
   final _storage = FirebaseStorage.instance;
   String _imgStatus = "";
   String _imageID = "";
   String _imgUrl;
   int _value = 1;
-  // String _deployedUrl = "abstracto-backend.herokuapp.com";
   String _deployedUrl = "127.0.0.1:5000";
 
   final inputController = TextEditingController();
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     inputController.dispose();
     super.dispose();
   }
 
-  //to handle the get request
   _handleGetSummary() async {
     try {
       var url = Uri.http(_deployedUrl, '/summary');
-      //use http version 0.12.2
       http.Response response = await http.get(
         url,
       );
-      // print(response);
       if (response.statusCode == 200) {
-        // Summary summary = Summary.fromJson(response.body);
         Map<String, dynamic> jsonResponse = convert.jsonDecode(response.body);
         Summary responseSummary = Summary.fromMap(jsonResponse);
-        // print(jsonResponse['summary']);
-        // print(summary.responseSummary);
+
         setState(() {
           _currentSummary = responseSummary;
+          _error = null;
+        });
+      } else {
+        setState(() {
+          _error = "Invalid text";
         });
       }
     } catch (err, stacktrace) {
@@ -64,15 +61,20 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
 
   _handlePostUrl() async {
     try {
-      // print(inputController.text);
       var url = Uri.http(_deployedUrl, '/scrapper');
       final responseUrl = await http.post(
         url,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, String>{'url': inputController.text}),
+        body: jsonEncode(
+            <String, String>{'url': inputController.text, 'error': null}),
       );
+      if (responseUrl.statusCode != 200) {
+        setState(() {
+          _error = "Invalid url";
+        });
+      }
       return responseUrl;
     } catch (err, stacktrace) {
       print(err);
@@ -82,7 +84,6 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
 
   _handlePostArticle() async {
     try {
-      // print(inputController.text);
       var url = Uri.http(_deployedUrl, '/article');
 
       final responseArticle = await http.post(
@@ -92,8 +93,8 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
         },
         body: jsonEncode(<String, String>{'article': inputController.text}),
       );
+      // print(responseArticle.body);
       return responseArticle;
-      // if (responseArticle.statusCode == 201) return 201;
     } catch (err, stacktrace) {
       print(err);
       print(stacktrace);
@@ -102,7 +103,6 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
 
   _handlePostImage() async {
     try {
-      // print(inputController.text);
       var url = Uri.http(_deployedUrl, '/image');
 
       final responseImage = await http.post(
@@ -112,9 +112,12 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
         },
         body: jsonEncode(<String, String>{'imageUrl': _imgUrl}),
       );
-      // print(_imgUrl);
+      if (responseImage.statusCode != 200) {
+        setState(() {
+          _error = "Invalid image";
+        });
+      }
       return responseImage;
-      // if (responseArticle.statusCode == 201) return 201;
     } catch (err, stacktrace) {
       print(err);
       print(stacktrace);
@@ -144,31 +147,16 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
   }
 
   _runArticle() async {
-    // _handlePostArticle();
-    // Timer(Duration(seconds: 1), () {
-    //   _handleGetSummary();
-    // });
     var res = await _handlePostArticle();
     if (res.statusCode == 201) _handleGetSummary();
   }
 
   _runURL() async {
-    // _handlePostUrl();
-    // Timer(Duration(seconds: 5), () {
-    //   _handleGetSummary();
-    // });
     var res = await _handlePostUrl();
     if (res.statusCode == 201) _handleGetSummary();
   }
 
   _runImage() async {
-    // _handlePostImage();
-    // setState(() {
-    //   _imgUrl = null;
-    // });
-    // Timer(Duration(seconds: 2), () {
-    //   _handleGetSummary();
-    // });
     var res = await _handlePostImage();
     setState(() {
       _imgUrl = null;
@@ -176,39 +164,8 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
     if (res.statusCode == 201) _handleGetSummary();
   }
 
-  // _uploadImage() {
-  //   InputElement uploadInput = FileUploadInputElement()..accept = 'images/*';
-  //   uploadInput.click();
-  //   uploadInput.onChange.listen((event) {
-  //     final file = uploadInput.files.first;
-  //     final reader = FileReader();
-  //     reader.readAsDataUrl(file);
-  //     reader.onLoadEnd.listen((event) {
-  //       print("Done");
-  //     });
-  //   });
-  // }
-  // _uploadImage() {
-  //   InputElement input = FileUploadInputElement()..accept = 'image/*';
-  //   FirebaseStorage fs = FirebaseStorage.instance;
-  //   input.click();
-  //   input.onChange.listen((event) {
-  //     final file = input.files.first;
-  //     final reader = FileReader();
-  //     reader.readAsDataUrl(file);
-  //     reader.onLoadEnd.listen((event) async {
-  //       var snapshot = await fs.ref().child('newfile').putBlob(file);
-  //       String downloadUrl = await snapshot.ref.getDownloadURL();
-  //       setState(() {
-  //         _imgUrl = downloadUrl;
-  //       });
-  //     });
-  //   });
-  // }
-
   _uploadToStorage() {
     InputElement input = FileUploadInputElement()..accept = 'image/*';
-    // FirebaseStorage fs = FirebaseStorage.instance;
     input.click();
     input.onChange.listen((event) {
       final file = input.files.first;
@@ -219,8 +176,6 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
             .ref('gs://abstracto-db.appspot.com')
             .child(Uuid().v1());
         final UploadTask uploadTask = reference.putBlob(file);
-        // var snapshot = await fs.ref().child('newfile').putBlob(file);
-        // String downloadUrl = await snapshot.ref.getDownloadURL();
         uploadTask.whenComplete(() async {
           String imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
           setState(() {
@@ -455,16 +410,22 @@ class _HomeContentDesktopState extends State<HomeContentDesktop> {
                         color: Colors.black,
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          _currentSummary != null
-                              ? _currentSummary.summary
-                              : "Output Screen",
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                          padding: const EdgeInsets.all(8.0),
+                          child: _error == null
+                              ? Text(
+                                  _currentSummary != null
+                                      ? _currentSummary.summary
+                                      : "Output Screen",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  _error,
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                  ),
+                                )),
                     ),
                   ),
                 ),
