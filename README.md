@@ -1,16 +1,6 @@
-# abstracto_frontend
+# Abstracto
 
-A new Flutter project.
+A Web App made in Flutter 2.0 connected with a Flask Backend and a Firestore database, communicating via REST APIs. Backend - Automatic Text Summarization with OCR and Web Scraping using KMeans Clustering for clustering sentences and Linear regression to predict the number of optimal clusters (no of lines of summary) for a given input article. 
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Home Page
+![home page](https://github.com/bhogalprabjot/abstracto-frontend/blob/main/screenshots/Homepage.PNG?raw=true)
